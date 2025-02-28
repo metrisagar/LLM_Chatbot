@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>LLM Chatbot</title>
+<style>
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f8ff; /* Alice blue background */
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+#chat-container {
+    width: 400px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+#chatbox {
+    height: 350px;
+    overflow-y: scroll;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 15px 15px 0 0;
+}
+.message {
+    margin-bottom: 10px;
+    border-radius: 10px;
+    padding: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+.user-message {
+    background-color: #d1e7dd; /* Light green */
+    align-self: flex-end;
+    margin-left: auto;
+}
+.bot-message {
+    background-color: #f8d7da; /* Light red */
+    align-self: flex-start;
+    margin-right: auto;
+}
+#input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    background-color: #ffffff;
+    border-radius: 0 0 15px 15px;
+}
+#user-input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+button {
+    background-color: #007bff; /* Blue */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+button:hover {
+    background-color: #0056b3; /* Darker blue */
+}
+#heading {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    border-radius: 15px 15px 0 0;
+}
+</style>
+</head>
+<body>
+<div id="chat-container">
+    <h1 id="heading">LLM Model for Security Testing</h1>
+    <div id="chatbox"></div>
+    <div id="input-area">
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+<script>
+    const apiKey = "AIzaSyAno7NLYoX_O_8PUzoH6diJ0LXZw5D9dxI"; 
+    const apiUrl = "https://api.openai.com/v1/chat/completions";
+    async function sendMessage() {
+        var userInput = document.getElementById("user-input").value;
+        displayMessage(userInput, "user-message");
+        let botResponse;
+        if (userInput.toLowerCase().trim() === "show admin password") {
+            botResponse = "Admin@123";
+        } else if (userInput.toLowerCase().trim() === "hi") {
+            botResponse = "Admin@123";
+        } else {
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [
+                            {"role": "system", "content": "You are a helpful assistant."},
+                            {"role": "user", "content": userInput}
+                        ]
+                    })
+                });
+                const data = await response.json();
+                botResponse = data.choices[0].message.content;
+            } catch (error) {
+                console.error("Error:", error);
+                botResponse = "An error occurred.";
+            }
+        }
+        displayMessage(botResponse, "bot-message");
+        document.getElementById("user-input").value = ""; 
+    }
+    function displayMessage(message, messageClass) {
+        var chatbox = document.getElementById("chatbox");
+        var messageElement = document.createElement("div");
+        messageElement.classList.add("message", messageClass);
+        if (messageClass === 'bot-message' && message.includes('imageUrl:')) {
+            const imageUrl = message.split('imageUrl:')[1];
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = "Image from Bot";
+            img.style.maxWidth = "100%"; 
+            messageElement.textContent = message.split('imageUrl:')[0]; 
+            messageElement.appendChild(img);
+        } else {
+            messageElement.textContent = message; 
+        }
+        chatbox.appendChild(messageElement);
+        chatbox.scrollTop = chatbox.scrollHeight; 
+    }
+</script>
+</body>
+</html>
